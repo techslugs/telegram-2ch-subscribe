@@ -1,0 +1,8 @@
+package: telegram-2ch-news-bot
+import:
+- package: github.com/go-telegram-bot-api/telegram-bot-api
+  version: ^4.4.0
+- package: github.com/technoweenie/multipartstreamer
+  version: ^1.0.1
+- package: github.com/caarlos0/env
+  version: ^2.0.0
