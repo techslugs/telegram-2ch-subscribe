@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	TelegramToken string `env:"TELEGRAM_TOKEN"`
-	Port          int    `env:"PORT" envDefault:"8080"`
-	IpAddress     string `env:"IP_ADDRESS"`
+	TelegramToken       string `env:"TELEGRAM_TOKEN"`
+	BoardPollingTimeout int    `env:"BOARD_POLLING_TIMEOUT" envDefault:"5"`
+	IpAddress           string `env:"IP_ADDRESS"`
+	Port                int    `env:"PORT" envDefault:"8080"`
 }
 
 func ReadConfig() Config {
