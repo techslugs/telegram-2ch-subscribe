@@ -1,5 +1,5 @@
-hash: c32ca9bed04d3ae2852273d9e29f3a7dc65e7bacfc982b5086ccca85b01ba3de
-updated: 2016-07-20T01:54:40.321145633+03:00
+hash: 1392df8635218a2a33678a9584853252d6637adc3f17789f4b9e5802c354477d
+updated: 2016-07-20T23:10:33.047577499+03:00
 imports:
 - name: github.com/caarlos0/env
   version: 65331f179c42e3ffe33457b69bee55472a779cd6
@@ -7,4 +7,6 @@ imports:
   version: 217764ba453f319b00d05506e56d26ef0a9fc231
 - name: github.com/technoweenie/multipartstreamer
   version: a90a01d73ae432e2611d178c18367fbaa13e0154
+- name: gopkg.in/mgo.v2
+  version: 29cc868a5ca65f401ff318143f9408d02f4799cc
 testImports: []

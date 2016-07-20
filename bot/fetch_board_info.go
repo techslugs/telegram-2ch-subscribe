@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,7 +9,8 @@ import (
 )
 
 const (
-	threadsEndpoint = "https://2ch.hk/%s/threads.json"
+	FetchBoardInfoError = "Error code: %v"
+	threadsEndpoint     = "https://2ch.hk/%s/threads.json"
 )
 
 type BoardInfoCallback func(*BoardInfo, error)
@@ -21,8 +23,16 @@ func (bot *Bot) fetchBoardInfoUpdates(updatesTimeout time.Duration, callback Boa
 }
 
 func (bot *Bot) fetchInfoForAllBoards(callback BoardInfoCallback) {
-	boardInfo, err := bot.fetchBoardInfo("b")
-	callback(boardInfo, err)
+	boardNames, err := bot.storage.AllBoardNames()
+	if err != nil {
+		callback(nil, err)
+		return
+	}
+
+	for _, boardName := range boardNames {
+		boardInfo, err := bot.fetchBoardInfo(boardName)
+		callback(boardInfo, err)
+	}
 }
 
 func (bot *Bot) fetchBoardInfo(board string) (*BoardInfo, error) {
@@ -30,17 +40,18 @@ func (bot *Bot) fetchBoardInfo(board string) (*BoardInfo, error) {
 	httpClient := http.Client{}
 	response, err := httpClient.Get(url)
 	if err != nil {
-		return nil, err
+		return &BoardInfo{Board: board}, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, err
+		return &BoardInfo{Board: board},
+			errors.New(fmt.Sprintf(FetchBoardInfoError, response.StatusCode))
 	}
 
 	responseBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return &BoardInfo{Board: board}, err
 	}
 
 	boardInfo := NewBoardInfo(responseBytes)

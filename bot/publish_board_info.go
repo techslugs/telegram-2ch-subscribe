@@ -1,24 +1,25 @@
 package bot
 
 import (
-	"fmt"
-	"time"
+	"log"
 )
 
 func (bot *Bot) publishBoardInfo(boardInfo *BoardInfo) {
-	lastTimestamp := lastPublishedTimestamp(boardInfo)
+	board, err := bot.storage.BoardDetails(boardInfo.Board)
+	if err != nil {
+		log.Printf("Error retrieving board details: %s\n", err.Error())
+		return
+	}
+
+	lastTimestamp := board.Timestamp
 	threads := boardInfo.threadsAfter(lastTimestamp)
 	if len(threads) == 0 {
 		return
 	}
 
 	for _, thread := range threads {
-		fmt.Println(thread.Subject)
+		log.Println(thread.Subject, thread.Timestamp)
+		bot.storage.UpdateBoardTimestamp(board.Name, thread.Timestamp)
 	}
-	fmt.Println("--------------------------------")
-}
-
-func lastPublishedTimestamp(boardInfo *BoardInfo) int64 {
-	now := time.Now().Add(-5 * time.Minute)
-	return now.Unix()
+	log.Println("--------------------------------")
 }

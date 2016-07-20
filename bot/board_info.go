@@ -31,6 +31,9 @@ func NewBoardInfo(jsonBoardData []byte) *BoardInfo {
 
 func (boardInfo *BoardInfo) threadsAfter(timestamp int64) []ThreadInfo {
 	threads := make([]ThreadInfo, 0)
+	if boardInfo == nil || boardInfo.Threads == nil {
+		return threads
+	}
 	for _, thread := range boardInfo.Threads {
 		if thread.Timestamp > timestamp {
 			threads = append(threads, thread)

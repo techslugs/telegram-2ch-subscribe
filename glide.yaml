@@ -6,3 +6,4 @@ import:
   version: ^1.0.1
 - package: github.com/caarlos0/env
   version: ^2.0.0
+- package: gopkg.in/mgo.v2
