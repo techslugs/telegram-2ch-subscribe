@@ -3,6 +3,7 @@ package bot
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type Storage struct {
@@ -11,9 +12,9 @@ type Storage struct {
 }
 
 type Board struct {
-	Name      string
-	ChatIDs   []string
-	Timestamp int64
+	Name      string  `bson:"name"`
+	ChatIDs   []int64 `bson:"chatIDs"`
+	Timestamp int64   `bson:"timestamp"`
 }
 
 func NewStorage(DB *mgo.Database) (*Storage, error) {
@@ -38,19 +39,30 @@ func boardByNameQuery(boardName string) bson.M {
 	return bson.M{"name": boardName}
 }
 
-func (storage *Storage) SubscribeChat(boardName string, chatID string) error {
+func defaultTimestamp() int64 {
+	return time.Now().Unix() - 30 // 30 seconds ago
+}
+
+func defaultChatIDs() []string {
+	return []string{}
+}
+
+func (storage *Storage) SubscribeChat(boardName string, chatID int64) error {
 	query := boardByNameQuery(boardName)
-	change := bson.M{"$addToSet": bson.M{"chatIDs": chatID}}
+	change := bson.M{
+		"$addToSet":    bson.M{"chatIDs": chatID},
+		"$setOnInsert": bson.M{"timestamp": defaultTimestamp()},
+	}
 	_, err := storage.Boards.Upsert(query, change)
 	return err
 }
 
-func (storage *Storage) UnsubscribeChat(boardName string, chatID string) error {
+func (storage *Storage) UnsubscribeChat(boardName string, chatID int64) error {
 	var query bson.M
 	if boardName != "" {
-		query = nil
+		query = boardByNameQuery(boardName)
 	} else {
-		query = bson.M{}
+		query = nil
 	}
 
 	change := bson.M{"$pull": bson.M{"chatIDs": chatID}}
@@ -81,7 +93,10 @@ func (storage *Storage) BoardDetails(boardName string) (*Board, error) {
 
 func (storage *Storage) UpdateBoardTimestamp(boardName string, timestamp int64) error {
 	query := boardByNameQuery(boardName)
-	change := bson.M{"$set": bson.M{"timestamp": timestamp}}
+	change := bson.M{
+		"$set":         bson.M{"timestamp": timestamp},
+		"$setOnInsert": bson.M{"chatIDs": defaultChatIDs()},
+	}
 	_, err := storage.Boards.Upsert(query, change)
 	return err
 }

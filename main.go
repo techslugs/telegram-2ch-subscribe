@@ -29,10 +29,10 @@ func main() {
 		log.Panic(err)
 	}
 
-	err = storage.UpdateBoardTimestamp("b", time.Now().Add(-5*time.Minute).Unix())
-	if err != nil {
-		log.Panic(err)
-	}
+	//err = storage.UpdateBoardTimestamp("b", time.Now().Add(-5*time.Minute).Unix())
+	//if err != nil {
+	//	log.Panic(err)
+	//}
 
 	err = bot.StartBot(
 		config.TelegramToken,

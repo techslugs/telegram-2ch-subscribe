@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"html"
 	"log"
 )
 
@@ -12,14 +13,25 @@ func (bot *Bot) publishBoardInfo(boardInfo *BoardInfo) {
 	}
 
 	lastTimestamp := board.Timestamp
-	threads := boardInfo.threadsAfter(lastTimestamp)
+	threads := boardInfo.ThreadsAfter(lastTimestamp)
 	if len(threads) == 0 {
 		return
 	}
 
+	var threadURL string
 	for _, thread := range threads {
-		log.Println(thread.Subject, thread.Timestamp)
+		threadURL = boardInfo.ThreadUrl(thread.ID)
+
+		log.Printf(
+			"[%s] %s: %s",
+			boardInfo.Board,
+			html.UnescapeString(thread.Subject),
+			threadURL,
+		)
+		for _, chatID := range board.ChatIDs {
+			bot.sendMessage(chatID, threadURL)
+		}
+
 		bot.storage.UpdateBoardTimestamp(board.Name, thread.Timestamp)
 	}
-	log.Println("--------------------------------")
 }

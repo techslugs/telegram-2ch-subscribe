@@ -2,11 +2,16 @@ package bot
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 )
 
+const (
+	ThreadUrl = "https://2ch.hk/%s/res/%s.html"
+)
+
 type ThreadInfo struct {
-	Id        string `json:"num"`
+	ID        string `json:"num"`
 	Subject   string `json:"subject"`
 	Timestamp int64  `json:"timestamp"`
 }
@@ -29,7 +34,7 @@ func NewBoardInfo(jsonBoardData []byte) *BoardInfo {
 	return &boardInfo
 }
 
-func (boardInfo *BoardInfo) threadsAfter(timestamp int64) []ThreadInfo {
+func (boardInfo *BoardInfo) ThreadsAfter(timestamp int64) []ThreadInfo {
 	threads := make([]ThreadInfo, 0)
 	if boardInfo == nil || boardInfo.Threads == nil {
 		return threads
@@ -42,4 +47,8 @@ func (boardInfo *BoardInfo) threadsAfter(timestamp int64) []ThreadInfo {
 	sort.Sort(ByTimestamp(threads))
 
 	return threads
+}
+
+func (boardInfo *BoardInfo) ThreadUrl(id string) string {
+	return fmt.Sprintf(ThreadUrl, boardInfo.Board, id)
 }
