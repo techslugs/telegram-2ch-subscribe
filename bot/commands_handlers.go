@@ -60,14 +60,13 @@ var (
 		) error {
 			chatID := message.Chat.ID
 			boardNames := SpaceRegexp.Split(args[1], -1)
-
 			subscribeToBoards(bot, chatID, chatID, boardNames, cmd.SuccessMessage)
 			log.Printf("[%s] subscribed to %v", message.From.UserName, boardNames)
 			return nil
 		},
 	}
 	UnsubscribeCommand = Command{
-		Regexp:         regexp.MustCompile(`\s*/2ch_unsubscribe\s+([\w\s]*)?`),
+		Regexp:         regexp.MustCompile(`\s*/2ch_unsubscribe\s*([\w\s]*)?`),
 		SuccessMessage: "Successfully unsubscribed!",
 		UsageMessage:   "/2ch_unsubscribe <board1> <board2>...",
 		ParseArguments: func(cmd *Command, messageText string) ([]string, bool) {
@@ -80,19 +79,10 @@ var (
 			args []string,
 			message *tgbotapi.Message,
 		) error {
-			var boardNames []string
-			if len(args) < 2 {
-				boardNames = []string{""}
-			} else {
-				boardNames = SpaceRegexp.Split(args[1], -1)
-			}
-
 			chatID := message.Chat.ID
-			for _, boardName := range boardNames {
-				bot.storage.UnsubscribeChat(boardName, chatID)
-			}
+			boardNames := SpaceRegexp.Split(args[1], -1)
+			unsubscribeFromBoards(bot, chatID, chatID, boardNames, cmd.SuccessMessage)
 			log.Printf("%v [%s] unsubscribed from %v", chatID, message.From.UserName, boardNames)
-			bot.sendMessage(chatID, cmd.SuccessMessage)
 			return nil
 		},
 	}
@@ -134,11 +124,44 @@ var (
 				bot.sendMessage(responseChatID, cmd.UsageMessage)
 				return err
 			}
-			boardNames := SpaceRegexp.Split(args[1], -1)
+			boardNames := SpaceRegexp.Split(args[2], -1)
 
 			subscribeToBoards(bot, chatID, responseChatID, boardNames, cmd.SuccessMessage)
 			log.Printf(
 				"[%s] subscribed channel %s to %v",
+				message.From.UserName,
+				channelName,
+				boardNames,
+			)
+			return nil
+		},
+	}
+	UnsubscribeChannelCommand = Command{
+		Regexp:         regexp.MustCompile(`\s*/2ch_unsubscribe_channel\s+(@\w*)\s*([\w\s]*)?`),
+		SuccessMessage: "Successfully unsubscribed!",
+		UsageMessage:   "/2ch_unsubscribe_channel @<channel> <board1> <board2>...",
+		ParseArguments: func(cmd *Command, messageText string) ([]string, bool) {
+			args := cmd.Regexp.FindStringSubmatch(messageText)
+			return args, len(args) > 2 && args[1] != ""
+		},
+		HandleCommand: func(
+			cmd *Command,
+			bot *Bot,
+			args []string,
+			message *tgbotapi.Message,
+		) error {
+			channelName := args[1]
+			responseChatID := message.Chat.ID
+			chatID, err := bot.getChatIDByChannelName(channelName)
+			if err != nil {
+				bot.sendMessage(responseChatID, cmd.UsageMessage)
+				return err
+			}
+			boardNames := SpaceRegexp.Split(args[2], -1)
+
+			unsubscribeFromBoards(bot, chatID, responseChatID, boardNames, cmd.SuccessMessage)
+			log.Printf(
+				"[%s] unsubscribed channel %s from %v",
 				message.From.UserName,
 				channelName,
 				boardNames,
@@ -162,6 +185,17 @@ func subscribeToBoards(bot *Bot,
 	bot.sendMessage(responseChatID, successMessage)
 }
 
+func unsubscribeFromBoards(bot *Bot,
+	unsubscribeChatID int64,
+	responseChatID int64,
+	boardNames []string,
+	successMessage string) {
+	for _, boardName := range boardNames {
+		bot.storage.UnsubscribeChat(boardName, unsubscribeChatID)
+	}
+	bot.sendMessage(responseChatID, successMessage)
+}
+
 func (bot *Bot) handleCommandsFromTelegram() {
 	for update := range bot.telegramUpdates {
 		bot.parseAndHandleCommand(&update)
@@ -176,10 +210,12 @@ func (bot *Bot) parseAndHandleCommand(update *tgbotapi.Update) {
 
 	messageText := update.Message.Text
 	switch {
-	case SubscribeCommand.Matches(messageText):
-		SubscribeCommand.Handle(bot, update.Message)
 	case SubscribeChannelCommand.Matches(messageText):
 		SubscribeChannelCommand.Handle(bot, update.Message)
+	case UnsubscribeChannelCommand.Matches(messageText):
+		UnsubscribeChannelCommand.Handle(bot, update.Message)
+	case SubscribeCommand.Matches(messageText):
+		SubscribeCommand.Handle(bot, update.Message)
 	case UnsubscribeCommand.Matches(messageText):
 		UnsubscribeCommand.Handle(bot, update.Message)
 	case UsageCommand.Matches(messageText):
