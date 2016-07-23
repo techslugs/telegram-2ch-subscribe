@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"errors"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"regexp"
@@ -38,8 +39,15 @@ func (cmd *Command) Handle(bot *Bot, message *tgbotapi.Message) {
 			return
 		}
 	}
-	cmd.HandleCommand(cmd, bot, args, message)
+	err := cmd.HandleCommand(cmd, bot, args, message)
+	if err != nil {
+		bot.sendReplyMessage(message.Chat.ID, message.MessageID, err.Error())
+	}
 }
+
+const (
+	UnauthorizedError = "You have to be channel administrator to do that."
+)
 
 var (
 	SpaceRegexp = regexp.MustCompile(`\s`)
@@ -59,6 +67,9 @@ var (
 			message *tgbotapi.Message,
 		) error {
 			chatID := message.Chat.ID
+			if !bot.isUserAdministrator(chatID, message.From.ID) {
+				return errors.New(UnauthorizedError)
+			}
 			boardNames := SpaceRegexp.Split(args[1], -1)
 			subscribeToBoards(bot, chatID, chatID, boardNames, cmd.SuccessMessage)
 			log.Printf("[%s] subscribed to %v", message.From.UserName, boardNames)
@@ -80,6 +91,9 @@ var (
 			message *tgbotapi.Message,
 		) error {
 			chatID := message.Chat.ID
+			if !bot.isUserAdministrator(chatID, message.From.ID) {
+				return errors.New(UnauthorizedError)
+			}
 			boardNames := SpaceRegexp.Split(args[1], -1)
 			unsubscribeFromBoards(bot, chatID, chatID, boardNames, cmd.SuccessMessage)
 			log.Printf("%v [%s] unsubscribed from %v", chatID, message.From.UserName, boardNames)
@@ -124,6 +138,9 @@ var (
 				bot.sendMessage(responseChatID, cmd.UsageMessage)
 				return err
 			}
+			if !bot.isUserAdministrator(chatID, message.From.ID) {
+				return errors.New(UnauthorizedError)
+			}
 			boardNames := SpaceRegexp.Split(args[2], -1)
 
 			subscribeToBoards(bot, chatID, responseChatID, boardNames, cmd.SuccessMessage)
@@ -156,6 +173,9 @@ var (
 			if err != nil {
 				bot.sendMessage(responseChatID, cmd.UsageMessage)
 				return err
+			}
+			if !bot.isUserAdministrator(chatID, message.From.ID) {
+				return errors.New(UnauthorizedError)
 			}
 			boardNames := SpaceRegexp.Split(args[2], -1)
 
@@ -230,6 +250,35 @@ func (bot *Bot) getChatIDByChannelName(channelName string) (int64, error) {
 		return 0, err
 	}
 	return chat.ID, nil
+}
+
+func (bot *Bot) isUserAdministrator(chatID int64, userID int) bool {
+	chatConfig := tgbotapi.ChatConfig{ChatID: chatID}
+	chat, err := bot.telegramApi.GetChat(chatConfig)
+	switch {
+	case err != nil:
+		return false
+	case chat.IsPrivate():
+		return true
+	}
+
+	members, err := bot.telegramApi.GetChatAdministrators(chatConfig)
+	if err != nil {
+		return false
+	}
+	for _, member := range members {
+		if member.User.ID == userID {
+			return true
+		}
+	}
+	return false
+}
+
+func (bot *Bot) sendReplyMessage(chatID int64, messageID int, messageText string) {
+	msg := tgbotapi.NewMessage(chatID, messageText)
+	msg.ReplyToMessageID = messageID
+
+	bot.telegramApi.Send(msg)
 }
 
 func (bot *Bot) sendMessage(chatID int64, messageText string) {
