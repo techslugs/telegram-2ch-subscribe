@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"telegram-2ch-news-bot/storage"
+	"github.com/tmwh/telegram-2ch-subscribe/storage"
 	"time"
 )
 

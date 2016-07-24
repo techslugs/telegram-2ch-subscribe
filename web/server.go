@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"telegram-2ch-news-bot/version"
+	"github.com/tmwh/telegram-2ch-subscribe/version"
 )
 
 func StartServer(ipAddress string, port int) error {

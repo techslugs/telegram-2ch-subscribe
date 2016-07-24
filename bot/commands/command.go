@@ -3,7 +3,7 @@ package commands
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"regexp"
-	"telegram-2ch-news-bot/telegram"
+	"github.com/tmwh/telegram-2ch-subscribe/telegram"
 )
 
 const (

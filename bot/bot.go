@@ -3,9 +3,9 @@ package bot
 import (
 	"log"
 	"net/http"
-	"telegram-2ch-news-bot/bot/fetchers"
-	"telegram-2ch-news-bot/storage"
-	"telegram-2ch-news-bot/telegram"
+	"github.com/tmwh/telegram-2ch-subscribe/bot/fetchers"
+	"github.com/tmwh/telegram-2ch-subscribe/storage"
+	"github.com/tmwh/telegram-2ch-subscribe/telegram"
 	"time"
 )
 

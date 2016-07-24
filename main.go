@@ -2,11 +2,11 @@ package main
 
 import (
 	"log"
-	"telegram-2ch-news-bot/bot"
-	"telegram-2ch-news-bot/env_config"
-	"telegram-2ch-news-bot/storage"
-	"telegram-2ch-news-bot/telegram"
-	"telegram-2ch-news-bot/web"
+	"github.com/tmwh/telegram-2ch-subscribe/bot"
+	"github.com/tmwh/telegram-2ch-subscribe/env_config"
+	"github.com/tmwh/telegram-2ch-subscribe/storage"
+	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"github.com/tmwh/telegram-2ch-subscribe/web"
 	"time"
 )
 

@@ -2,7 +2,7 @@ package bot
 
 import (
 	"log"
-	"telegram-2ch-news-bot/bot/fetchers"
+	"github.com/tmwh/telegram-2ch-subscribe/bot/fetchers"
 )
 
 func (bot *Bot) saveBoardsList(boardsList *fetchers.BoardsList) {

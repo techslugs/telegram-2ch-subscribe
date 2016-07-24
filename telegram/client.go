@@ -4,7 +4,7 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"regexp"
-	"telegram-2ch-news-bot/storage"
+	"github.com/tmwh/telegram-2ch-subscribe/storage"
 )
 
 var (
