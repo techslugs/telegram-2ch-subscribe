@@ -1,34 +1,29 @@
 package bot
 
 import (
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"net/http"
 	"telegram-2ch-news-bot/bot/fetchers"
-	"telegram-2ch-news-bot/bot/handlers"
 	"telegram-2ch-news-bot/storage"
+	"telegram-2ch-news-bot/telegram"
 	"time"
 )
 
 type Bot struct {
 	Storage           *storage.Storage
-	TelegramCommands  *handlers.TelegramCommandsHandler
+	TelegramClient    *telegram.Client
 	BoardListFetcher  *fetchers.BoardsListFetcher
 	BoardsInfoFetcher *fetchers.BoardsInfoFetcher
 }
 
 func StartBot(
-	telegramToken string,
 	boardsListUpdateTimeout time.Duration,
 	boardInfoUpdateTimeout time.Duration,
+	telegramClient *telegram.Client,
 	storage *storage.Storage,
 ) error {
 
-	bot := Bot{Storage: storage}
-	err := bot.setupTelegramCommands(telegramToken)
-	if err != nil {
-		return err
-	}
+	bot := Bot{Storage: storage, TelegramClient: telegramClient}
 
 	httpClient := &http.Client{Timeout: time.Second * 5}
 	bot.BoardListFetcher = &fetchers.BoardsListFetcher{HttpClient: httpClient}
@@ -37,7 +32,8 @@ func StartBot(
 		Storage:    bot.Storage,
 	}
 
-	go handlers.StartHandleCommandsFromTelegram(bot.TelegramCommands)
+	go StartHandleCommandsFromTelegram(bot.TelegramClient)
+
 	go fetchers.StartFetchingBoardsListUpdates(
 		bot.BoardListFetcher,
 		boardsListUpdateTimeout,
@@ -63,27 +59,5 @@ func StartBot(
 			bot.publishBoardInfo(boardInfo)
 		})
 
-	return nil
-}
-
-func (bot *Bot) setupTelegramCommands(telegramToken string) error {
-	api, err := tgbotapi.NewBotAPI(telegramToken)
-	if err != nil {
-		return err
-	}
-
-	updateConfig := tgbotapi.NewUpdate(0)
-	updateConfig.Timeout = 60
-
-	telegramUpdates, err := api.GetUpdatesChan(updateConfig)
-	if err != nil {
-		return err
-	}
-
-	bot.TelegramCommands = &handlers.TelegramCommandsHandler{
-		TelegramAPI:     api,
-		TelegramUpdates: telegramUpdates,
-		Storage:         bot.Storage,
-	}
 	return nil
 }

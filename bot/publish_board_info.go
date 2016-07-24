@@ -30,7 +30,7 @@ func (bot *Bot) publishBoardInfo(boardInfo *fetchers.BoardInfo) {
 			threadURL,
 		)
 		for _, chatID := range board.ChatIDs {
-			bot.TelegramCommands.SendMessage(chatID, threadURL)
+			bot.TelegramClient.SendMessage(chatID, threadURL)
 		}
 
 		bot.Storage.UpdateBoardTimestamp(board.Name, thread.Timestamp)

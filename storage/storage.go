@@ -30,7 +30,20 @@ var (
 	}
 )
 
-func NewStorage(DB *mgo.Database) (*Storage, error) {
+func NewStorage(mongoURL, databaseName string) (*Storage, error) {
+	session, err := mgo.Dial(mongoURL)
+	if err != nil {
+		return nil, err
+	}
+
+	storage, err := NewStorageFromDB(session.DB(databaseName))
+	if err != nil {
+		return nil, err
+	}
+	return storage, nil
+}
+
+func NewStorageFromDB(DB *mgo.Database) (*Storage, error) {
 	storage := Storage{
 		DB:                 DB,
 		BoardSubscriptions: DB.C("board_subscriptions"),
