@@ -1,4 +1,4 @@
-package bot
+package fetchers
 
 import (
 	"encoding/json"

@@ -1,42 +1,14 @@
-package bot
+package storage
 
 import (
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
-type Storage struct {
-	DB     *mgo.Database
-	Boards *mgo.Collection
-}
-
-type Board struct {
+type BoardSubscription struct {
 	Name      string  `bson:"name"`
 	ChatIDs   []int64 `bson:"chatIDs"`
 	Timestamp int64   `bson:"timestamp"`
-}
-
-func NewStorage(DB *mgo.Database) (*Storage, error) {
-	storage := Storage{DB: DB, Boards: DB.C("boards")}
-
-	boardsNameIndex := mgo.Index{
-		Key:        []string{"name"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-	err := storage.Boards.EnsureIndex(boardsNameIndex)
-	if err != nil {
-		return nil, err
-	}
-
-	return &storage, nil
-}
-
-func boardByNameQuery(boardName string) bson.M {
-	return bson.M{"name": boardName}
 }
 
 func defaultTimestamp() int64 {
@@ -53,7 +25,7 @@ func (storage *Storage) SubscribeChat(boardName string, chatID int64) error {
 		"$addToSet":    bson.M{"chatIDs": chatID},
 		"$setOnInsert": bson.M{"timestamp": defaultTimestamp()},
 	}
-	_, err := storage.Boards.Upsert(query, change)
+	_, err := storage.BoardSubscriptions.Upsert(query, change)
 	return err
 }
 
@@ -66,13 +38,13 @@ func (storage *Storage) UnsubscribeChat(boardName string, chatID int64) error {
 	}
 
 	change := bson.M{"$pull": bson.M{"chatIDs": chatID}}
-	_, err := storage.Boards.UpdateAll(query, change)
+	_, err := storage.BoardSubscriptions.UpdateAll(query, change)
 	return err
 }
 
 func (storage *Storage) AllBoardNames() ([]string, error) {
-	var boardsWithNames []Board
-	err := storage.Boards.Find(nil).Select(bson.M{"name": 1}).All(&boardsWithNames)
+	var boardsWithNames []BoardSubscription
+	err := storage.BoardSubscriptions.Find(nil).Select(bson.M{"name": 1}).All(&boardsWithNames)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +56,10 @@ func (storage *Storage) AllBoardNames() ([]string, error) {
 	return names, nil
 }
 
-func (storage *Storage) BoardDetails(boardName string) (*Board, error) {
+func (storage *Storage) BoardDetails(boardName string) (*BoardSubscription, error) {
 	query := boardByNameQuery(boardName)
-	var board Board
-	err := storage.Boards.Find(query).One(&board)
+	var board BoardSubscription
+	err := storage.BoardSubscriptions.Find(query).One(&board)
 	return &board, err
 }
 
@@ -97,6 +69,6 @@ func (storage *Storage) UpdateBoardTimestamp(boardName string, timestamp int64) 
 		"$set":         bson.M{"timestamp": timestamp},
 		"$setOnInsert": bson.M{"chatIDs": defaultChatIDs()},
 	}
-	_, err := storage.Boards.Upsert(query, change)
+	_, err := storage.BoardSubscriptions.Upsert(query, change)
 	return err
 }

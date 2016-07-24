@@ -3,10 +3,11 @@ package bot
 import (
 	"html"
 	"log"
+	"telegram-2ch-news-bot/bot/fetchers"
 )
 
-func (bot *Bot) publishBoardInfo(boardInfo *BoardInfo) {
-	board, err := bot.storage.BoardDetails(boardInfo.Board)
+func (bot *Bot) publishBoardInfo(boardInfo *fetchers.BoardInfo) {
+	board, err := bot.Storage.BoardDetails(boardInfo.Board)
 	if err != nil {
 		log.Printf("Error retrieving board details: %s\n", err.Error())
 		return
@@ -29,9 +30,9 @@ func (bot *Bot) publishBoardInfo(boardInfo *BoardInfo) {
 			threadURL,
 		)
 		for _, chatID := range board.ChatIDs {
-			bot.sendMessage(chatID, threadURL)
+			bot.TelegramCommands.SendMessage(chatID, threadURL)
 		}
 
-		bot.storage.UpdateBoardTimestamp(board.Name, thread.Timestamp)
+		bot.Storage.UpdateBoardTimestamp(board.Name, thread.Timestamp)
 	}
 }
