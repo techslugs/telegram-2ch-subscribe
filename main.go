@@ -6,6 +6,7 @@ import (
 	"telegram-2ch-news-bot/env_config"
 	"telegram-2ch-news-bot/storage"
 	"telegram-2ch-news-bot/telegram"
+	"telegram-2ch-news-bot/web"
 	"time"
 )
 
@@ -28,9 +29,11 @@ func main() {
 		telegramClient,
 		storage,
 	)
-
 	if err != nil {
 		log.Panic(err)
 	}
+
+	log.Fatal(web.StartServer(config.IpAddress, config.Port))
+
 	select {}
 }
