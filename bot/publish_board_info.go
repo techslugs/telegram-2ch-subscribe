@@ -9,7 +9,7 @@ import (
 func (bot *Bot) publishBoardInfo(boardInfo *fetchers.BoardInfo) {
 	board, err := bot.Storage.BoardDetails(boardInfo.Board)
 	if err != nil {
-		log.Printf("Error retrieving board details: %s\n", err.Error())
+		log.Printf("Error retrieving board details: %s\n", err)
 		return
 	}
 

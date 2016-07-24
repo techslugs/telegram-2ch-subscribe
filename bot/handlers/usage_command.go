@@ -12,13 +12,15 @@ var UsageCommand = Command{
 		UnsubscribeCommand.UsageMessage +
 		"\n" +
 		SubscribeChannelCommand.UsageMessage,
-	HandleCommand: func(
-		cmd *Command,
-		telegramCommands *TelegramCommandsHandler,
-		args []string,
-		message *tgbotapi.Message,
-	) error {
-		telegramCommands.SendMessage(message.Chat.ID, cmd.SuccessMessage)
-		return nil
-	},
+	HandleCommand: handleUsageCommand,
+}
+
+func handleUsageCommand(
+	cmd *Command,
+	telegramCommands *TelegramCommandsHandler,
+	args []string,
+	message *tgbotapi.Message,
+) error {
+	telegramCommands.SendMessage(message.Chat.ID, cmd.SuccessMessage)
+	return nil
 }

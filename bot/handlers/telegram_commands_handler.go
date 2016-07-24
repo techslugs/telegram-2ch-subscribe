@@ -83,7 +83,10 @@ func (handler *TelegramCommandsHandler) SendReplyMessage(
 	msg := tgbotapi.NewMessage(chatID, messageText)
 	msg.ReplyToMessageID = messageID
 
-	handler.TelegramAPI.Send(msg)
+	_, err := handler.TelegramAPI.Send(msg)
+	if err != nil {
+		handler.reportChatError(chatID, err)
+	}
 }
 
 func (handler *TelegramCommandsHandler) SendMessage(
@@ -92,7 +95,18 @@ func (handler *TelegramCommandsHandler) SendMessage(
 ) {
 	msg := tgbotapi.NewMessage(chatID, messageText)
 
-	handler.TelegramAPI.Send(msg)
+	_, err := handler.TelegramAPI.Send(msg)
+	if err != nil {
+		handler.reportChatError(chatID, err)
+	}
+}
+
+func (handler *TelegramCommandsHandler) reportChatError(chatID int64, err error) {
+	if err := handler.Storage.ReportChatError(chatID); err != nil {
+		log.Printf("Error while reporting Chat [%v] error: %s", chatID, err)
+		return
+	}
+	log.Printf("Chat [%v] error: %s", chatID, err)
 }
 
 func (handler *TelegramCommandsHandler) SubscribeToBoards(

@@ -11,7 +11,7 @@ func (bot *Bot) saveBoardsList(boardsList *fetchers.BoardsList) {
 		err = bot.Storage.SaveBoardDescription(board.Board, board.FullName, board.Description)
 
 		if err != nil {
-			log.Printf("Error saving board list: %s\n", err.Error())
+			log.Printf("Error saving board list: %s\n", err)
 		}
 	}
 }

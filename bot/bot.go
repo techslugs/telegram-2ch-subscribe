@@ -43,9 +43,7 @@ func StartBot(
 		boardsListUpdateTimeout,
 		func(boardInfo *fetchers.BoardsList, err error) {
 			if err != nil {
-				log.Printf(
-					`Error: Could not fetch boards list. %s`,
-					err.Error())
+				log.Printf(`Error: Could not fetch boards list. %s`, err)
 				return
 			}
 
@@ -58,10 +56,7 @@ func StartBot(
 		boardInfoUpdateTimeout,
 		func(boardInfo *fetchers.BoardInfo, err error) {
 			if err != nil {
-				log.Printf(
-					`Error: Could not fetch board info for "%s". %s`,
-					boardInfo.Board,
-					err.Error())
+				log.Printf(`Error: Could not fetch board info for "%s". %s`, boardInfo.Board, err)
 				return
 			}
 

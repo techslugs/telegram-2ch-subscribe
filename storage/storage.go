@@ -8,28 +8,45 @@ import (
 type Storage struct {
 	DB                 *mgo.Database
 	BoardSubscriptions *mgo.Collection
+	FailedChats        *mgo.Collection
 	BoardDescriptions  *mgo.Collection
 }
 
-func NewStorage(DB *mgo.Database) (*Storage, error) {
-	storage := Storage{
-		DB:                 DB,
-		BoardSubscriptions: DB.C("board_subscriptions"),
-		BoardDescriptions:  DB.C("board_descriptions"),
-	}
-
-	boardsNameIndex := mgo.Index{
+var (
+	BoardsNameIndex = mgo.Index{
 		Key:        []string{"name"},
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
 	}
-	err := storage.BoardSubscriptions.EnsureIndex(boardsNameIndex)
+
+	ChatIDIndex = mgo.Index{
+		Key:        []string{"chatID"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+)
+
+func NewStorage(DB *mgo.Database) (*Storage, error) {
+	storage := Storage{
+		DB:                 DB,
+		BoardSubscriptions: DB.C("board_subscriptions"),
+		FailedChats:        DB.C("failed_chats"),
+		BoardDescriptions:  DB.C("board_descriptions"),
+	}
+
+	err := storage.BoardSubscriptions.EnsureIndex(BoardsNameIndex)
 	if err != nil {
 		return nil, err
 	}
-	err = storage.BoardDescriptions.EnsureIndex(boardsNameIndex)
+	err = storage.BoardDescriptions.EnsureIndex(BoardsNameIndex)
+	if err != nil {
+		return nil, err
+	}
+	err = storage.FailedChats.EnsureIndex(ChatIDIndex)
 	if err != nil {
 		return nil, err
 	}
