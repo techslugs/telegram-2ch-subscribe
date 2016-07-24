@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"github.com/tmwh/telegram-2ch-subscribe/bot"
 	"github.com/tmwh/telegram-2ch-subscribe/env_config"
 	"github.com/tmwh/telegram-2ch-subscribe/storage"
 	"github.com/tmwh/telegram-2ch-subscribe/telegram"
 	"github.com/tmwh/telegram-2ch-subscribe/web"
+	"log"
 	"time"
 )
 
