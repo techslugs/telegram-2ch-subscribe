@@ -1,19 +1,19 @@
 package bot
 
 import (
-	"log"
-	"net/http"
 	"github.com/tmwh/telegram-2ch-subscribe/bot/fetchers"
+	"github.com/tmwh/telegram-2ch-subscribe/dvach"
 	"github.com/tmwh/telegram-2ch-subscribe/storage"
 	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"log"
+	"net/http"
 	"time"
 )
 
 type Bot struct {
-	Storage           *storage.Storage
-	TelegramClient    *telegram.Client
-	BoardListFetcher  *fetchers.BoardsListFetcher
-	BoardsInfoFetcher *fetchers.BoardsInfoFetcher
+	Storage        *storage.Storage
+	TelegramClient *telegram.Client
+	DvachClient    *dvach.Client
 }
 
 func StartBot(
@@ -26,18 +26,14 @@ func StartBot(
 	bot := Bot{Storage: storage, TelegramClient: telegramClient}
 
 	httpClient := &http.Client{Timeout: time.Second * 5}
-	bot.BoardListFetcher = &fetchers.BoardsListFetcher{HttpClient: httpClient}
-	bot.BoardsInfoFetcher = &fetchers.BoardsInfoFetcher{
-		HttpClient: httpClient,
-		Storage:    bot.Storage,
-	}
+	bot.DvachClient = &dvach.Client{HttpClient: httpClient}
 
 	go StartHandleCommandsFromTelegram(bot.TelegramClient)
 
 	go fetchers.StartFetchingBoardsListUpdates(
-		bot.BoardListFetcher,
+		bot.DvachClient,
 		boardsListUpdateTimeout,
-		func(boardInfo *fetchers.BoardsList, err error) {
+		func(boardInfo *dvach.BoardsList, err error) {
 			if err != nil {
 				log.Printf(`Error: Could not fetch boards list. %s`, err)
 				return
@@ -48,9 +44,10 @@ func StartBot(
 		})
 
 	go fetchers.StartFetchingBoardInfoUpdates(
-		bot.BoardsInfoFetcher,
+		bot.DvachClient,
+		bot.Storage,
 		boardInfoUpdateTimeout,
-		func(boardInfo *fetchers.BoardInfo, err error) {
+		func(boardInfo *dvach.BoardInfo, err error) {
 			if err != nil {
 				log.Printf(`Error: Could not fetch board info for "%s". %s`, boardInfo.Board, err)
 				return

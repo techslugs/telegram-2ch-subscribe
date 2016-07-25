@@ -1,4 +1,4 @@
-package fetchers
+package dvach
 
 import (
 	"encoding/json"

@@ -1,12 +1,12 @@
 package bot
 
 import (
+	"github.com/tmwh/telegram-2ch-subscribe/dvach"
 	"html"
 	"log"
-	"github.com/tmwh/telegram-2ch-subscribe/bot/fetchers"
 )
 
-func (bot *Bot) publishBoardInfo(boardInfo *fetchers.BoardInfo) {
+func (bot *Bot) publishBoardInfo(boardInfo *dvach.BoardInfo) {
 	board, err := bot.Storage.BoardDetails(boardInfo.Board)
 	if err != nil {
 		log.Printf("Error retrieving board details: %s\n", err)
