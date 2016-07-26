@@ -1,12 +1,23 @@
-hash: 1392df8635218a2a33678a9584853252d6637adc3f17789f4b9e5802c354477d
-updated: 2016-07-20T23:10:33.047577499+03:00
+hash: dcd2bc64a856d1271907250334c2c7caace7297da4cdc944383cbbe302bfce5a
+updated: 2016-07-26T03:20:15.648956365+03:00
 imports:
 - name: github.com/caarlos0/env
   version: 65331f179c42e3ffe33457b69bee55472a779cd6
 - name: github.com/go-telegram-bot-api/telegram-bot-api
   version: 217764ba453f319b00d05506e56d26ef0a9fc231
+- name: github.com/microcosm-cc/bluemonday
+  version: 9dc199233bf72cc1aad9b61f73daf2f0075b9ee4
 - name: github.com/technoweenie/multipartstreamer
   version: a90a01d73ae432e2611d178c18367fbaa13e0154
+- name: golang.org/x/net
+  version: 4d38db76854b199960801a1734443fd02870d7e1
+  subpackages:
+  - html
+  - html/atom
 - name: gopkg.in/mgo.v2
   version: 29cc868a5ca65f401ff318143f9408d02f4799cc
+  subpackages:
+  - bson
+  - internal/sasl
+  - internal/scram
 testImports: []

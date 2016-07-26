@@ -2,9 +2,9 @@ package telegram
 
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/tmwh/telegram-2ch-subscribe/storage"
 	"log"
 	"regexp"
-	"github.com/tmwh/telegram-2ch-subscribe/storage"
 )
 
 var (
@@ -94,6 +94,19 @@ func (client *Client) SendMessage(
 	messageText string,
 ) {
 	msg := tgbotapi.NewMessage(chatID, messageText)
+
+	_, err := client.TelegramAPI.Send(msg)
+	if err != nil {
+		client.reportChatError(chatID, err)
+	}
+}
+
+func (client *Client) SendMarkdownMessage(
+	chatID int64,
+	messageText string,
+) {
+	msg := tgbotapi.NewMessage(chatID, messageText)
+	msg.ParseMode = "Markdown"
 
 	_, err := client.TelegramAPI.Send(msg)
 	if err != nil {

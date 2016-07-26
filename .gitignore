@@ -23,6 +23,7 @@ _testmain.go
 *.test
 *.prof
 vendor/*
+.glide/*
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
