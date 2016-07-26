@@ -98,6 +98,8 @@ func (client *Client) SendMessage(
 	_, err := client.TelegramAPI.Send(msg)
 	if err != nil {
 		client.reportChatError(chatID, err)
+	} else {
+		client.reportChatSuccess(chatID)
 	}
 }
 
@@ -111,6 +113,8 @@ func (client *Client) SendMarkdownMessage(
 	_, err := client.TelegramAPI.Send(msg)
 	if err != nil {
 		client.reportChatError(chatID, err)
+	} else {
+		client.reportChatSuccess(chatID)
 	}
 }
 
@@ -120,6 +124,13 @@ func (client *Client) reportChatError(chatID int64, err error) {
 		return
 	}
 	log.Printf("Chat [%v] error: %s", chatID, err)
+}
+
+func (client *Client) reportChatSuccess(chatID int64) {
+	if err := client.Storage.ReportChatSuccess(chatID); err != nil {
+		log.Printf("Error while reporting Chat [%v] error: %s", chatID, err)
+		return
+	}
 }
 
 func (client *Client) SubscribeToBoards(

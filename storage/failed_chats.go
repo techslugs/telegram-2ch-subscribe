@@ -17,6 +17,15 @@ func chatByIDQuery(chatID int64) bson.M {
 	return bson.M{"chatID": chatID}
 }
 
+func (storage *Storage) ReportChatSuccess(chatID int64) error {
+	query := chatByIDQuery(chatID)
+	change := bson.M{
+		"$set": bson.M{"failedAttemptsCount": 0},
+	}
+	_, err := storage.FailedChats.UpdateAll(query, change)
+	return err
+}
+
 func (storage *Storage) ReportChatError(chatID int64) error {
 	query := chatByIDQuery(chatID)
 	change := bson.M{

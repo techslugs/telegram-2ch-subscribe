@@ -52,13 +52,23 @@ func (post *Post) FileUrl(board string) string {
 	return fmt.Sprintf(FileEndpoint, board, post.Files[0].Path)
 }
 
+func (post *Post) SanitizedSubject() string {
+	subject := html.UnescapeString(post.Subject)
+	subject = strings.Replace(subject, "*", "\\*", -1)
+	subject = strings.Replace(subject, "_", "\\_", -1)
+	policy := bluemonday.StrictPolicy()
+	return html.UnescapeString(policy.Sanitize(subject))
+}
+
 func (post *Post) SanitizedComment() string {
 	comment := html.UnescapeString(post.Comment)
 	comment = strings.Replace(comment, "<br>", "\n", -1)
+	comment = strings.Replace(comment, "*", "\\*", -1)
+	comment = strings.Replace(comment, "_", "\\_", -1)
 	comment = strings.Replace(comment, "<strong>", "*", -1)
 	comment = strings.Replace(comment, "</strong>", "*", -1)
 	comment = strings.Replace(comment, "<i>", "_", -1)
 	comment = strings.Replace(comment, "</i>", "_", -1)
 	policy := bluemonday.StrictPolicy()
-	return policy.Sanitize(comment)
+	return html.UnescapeString(policy.Sanitize(comment))
 }

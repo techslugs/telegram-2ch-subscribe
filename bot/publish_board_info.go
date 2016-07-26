@@ -5,6 +5,7 @@ import (
 	"github.com/tmwh/telegram-2ch-subscribe/dvach"
 	"html"
 	"log"
+	"strings"
 )
 
 func (bot *Bot) publishBoardInfo(boardInfo *dvach.BoardInfo) {
@@ -61,7 +62,7 @@ func getFormatedThreadMessage(
 
 	message := ""
 	if post.Subject != "" {
-		message = message + fmt.Sprintf("*%s*\n", html.UnescapeString(post.Subject))
+		message = message + fmt.Sprintf("*%s*\n", post.SanitizedSubject())
 	}
 	if fileURL := post.FileUrl(board); fileURL != "" {
 		message = message + fmt.Sprintf("%s\n\n", fileURL)
@@ -69,5 +70,20 @@ func getFormatedThreadMessage(
 	if comment := post.SanitizedComment(); comment != "" {
 		message = message + fmt.Sprintf("%s\n", comment)
 	}
-	return message + post.ThreadUrl(board), nil
+	message = fmt.Sprintf("%.4000s", message)
+	message = addMissingFormatting(message, "*")
+	message = addMissingFormatting(message, "_")
+	message = message + post.ThreadUrl(board)
+
+	return message, nil
+}
+
+func addMissingFormatting(message, formatChar string) string {
+	allCount := strings.Count(message, formatChar)
+	escapedCount := strings.Count(message, "\\"+formatChar)
+	if (allCount-escapedCount)%2 == 0 {
+		return message
+	}
+
+	return message + formatChar
 }
