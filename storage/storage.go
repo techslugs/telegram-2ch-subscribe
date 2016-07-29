@@ -13,6 +13,14 @@ type Storage struct {
 }
 
 var (
+	BoardSubscriptionsIndex = mgo.Index{
+		Key:        []string{"boardName", "chatID"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
 	BoardsNameIndex = mgo.Index{
 		Key:        []string{"name"},
 		Unique:     true,
@@ -51,7 +59,7 @@ func NewStorageFromDB(DB *mgo.Database) (*Storage, error) {
 		BoardDescriptions:  DB.C("board_descriptions"),
 	}
 
-	err := storage.BoardSubscriptions.EnsureIndex(BoardsNameIndex)
+	err := storage.BoardSubscriptions.EnsureIndex(BoardSubscriptionsIndex)
 	if err != nil {
 		return nil, err
 	}

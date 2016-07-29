@@ -3,16 +3,17 @@ package commands
 import (
 	"errors"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/tmwh/telegram-2ch-subscribe/telegram"
 	"log"
 	"regexp"
-	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"strconv"
 )
 
 var Subscribe = &SubscribeCommand{
 	BaseCommand{
-		regexp:         regexp.MustCompile(`\s*/2ch_subscribe\s+([\w\s]*)`),
+		regexp:         regexp.MustCompile(`\s*/2ch_subscribe\s+(\w+)\s*(\d+(\.\d*)?)`),
 		successMessage: "Successfully subscribed!",
-		usageMessage:   "/2ch_subscribe <board1> <board2>...",
+		usageMessage:   "/2ch_subscribe <board1> <min score>",
 	},
 }
 
@@ -22,7 +23,7 @@ type SubscribeCommand struct {
 
 func (cmd *SubscribeCommand) Parse(messageText string) ([]string, bool) {
 	args := cmd.regexp.FindStringSubmatch(messageText)
-	return args, len(args) > 1 && args[1] != ""
+	return args, true
 }
 
 func (cmd *SubscribeCommand) Process(
@@ -34,9 +35,19 @@ func (cmd *SubscribeCommand) Process(
 	if !telegramClient.IsUserAdministrator(chatID, message.From.ID) {
 		return errors.New(UnauthorizedError)
 	}
+	minScore, err := strconv.ParseFloat(args[2], 64)
+	if err != nil {
+		return errors.New(cmd.UsageMessage())
+	}
 
 	boardNames, err :=
-		telegramClient.SubscribeToBoards(chatID, chatID, args[1], cmd.SuccessMessage())
+		telegramClient.SubscribeToBoards(
+			chatID,
+			chatID,
+			args[1],
+			minScore,
+			cmd.SuccessMessage(),
+		)
 
 	if err != nil {
 		log.Printf(

@@ -3,6 +3,7 @@ package fetchers
 import (
 	"github.com/tmwh/telegram-2ch-subscribe/dvach"
 	"github.com/tmwh/telegram-2ch-subscribe/storage"
+	"log"
 	"time"
 )
 
@@ -30,6 +31,7 @@ func fetchInfoForAllBoards(
 		callback(nil, err)
 		return
 	}
+	log.Printf("%v", boardNames)
 
 	for _, boardName := range boardNames {
 		boardInfo, err := dvachClient.BoardInfo(boardName)

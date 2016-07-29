@@ -137,6 +137,7 @@ func (client *Client) SubscribeToBoards(
 	subscribeChatID int64,
 	responseChatID int64,
 	boardNamesSplitBySpace string,
+	minScore float64,
 	successMessage string,
 ) ([]string, error) {
 	boardNames, err := client.Storage.
@@ -149,7 +150,7 @@ func (client *Client) SubscribeToBoards(
 		if boardName == "" {
 			continue
 		}
-		client.Storage.SubscribeChat(boardName, subscribeChatID)
+		client.Storage.SubscribeChat(boardName, subscribeChatID, minScore)
 	}
 	client.SendMessage(responseChatID, successMessage)
 	return boardNames, nil

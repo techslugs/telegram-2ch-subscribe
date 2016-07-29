@@ -11,9 +11,10 @@ const (
 )
 
 type ThreadInfo struct {
-	ID        string `json:"num"`
-	Subject   string `json:"subject"`
-	Timestamp int64  `json:"timestamp"`
+	ID        string  `json:"num"`
+	Subject   string  `json:"subject"`
+	Score     float64 `json:"score"`
+	Timestamp int64   `json:"timestamp"`
 }
 
 type ByTimestamp []ThreadInfo
@@ -34,19 +35,35 @@ func NewBoardInfo(jsonBoardData []byte) *BoardInfo {
 	return &boardInfo
 }
 
-func (boardInfo *BoardInfo) ThreadsAfter(timestamp int64) []ThreadInfo {
+func (boardInfo *BoardInfo) NotSentThreadsWithScoreGreaterThan(
+	sentThreadIDs []string,
+	timestamp int64,
+	minScore float64,
+) []ThreadInfo {
 	threads := make([]ThreadInfo, 0)
 	if boardInfo == nil || boardInfo.Threads == nil {
 		return threads
 	}
+
+	sentThreadIDsMap := buildThreadIDsMap(sentThreadIDs)
 	for _, thread := range boardInfo.Threads {
-		if thread.Timestamp > timestamp {
+		if _, ok := sentThreadIDsMap[thread.ID]; !ok &&
+			thread.Score > minScore &&
+			thread.Timestamp > timestamp {
 			threads = append(threads, thread)
 		}
 	}
 	sort.Sort(ByTimestamp(threads))
 
 	return threads
+}
+
+func buildThreadIDsMap(sentThreadIDs []string) map[string]struct{} {
+	threadIDsMap := make(map[string]struct{})
+	for _, threadID := range sentThreadIDs {
+		threadIDsMap[threadID] = struct{}{}
+	}
+	return threadIDsMap
 }
 
 func (boardInfo *BoardInfo) ThreadUrl(id string) string {

@@ -1,22 +1,46 @@
 package bot
 
 import (
-	"fmt"
 	"github.com/tmwh/telegram-2ch-subscribe/dvach"
+	"github.com/tmwh/telegram-2ch-subscribe/storage"
 	"html"
 	"log"
-	"strings"
+	"sync"
 )
 
 func (bot *Bot) publishBoardInfo(boardInfo *dvach.BoardInfo) {
-	board, err := bot.Storage.BoardDetails(boardInfo.Board)
+	boardSubscriptions, err := bot.Storage.AllBoardSubscriptions(boardInfo.Board)
 	if err != nil {
-		log.Printf("Error retrieving board details: %s\n", err)
+		log.Printf("Error retrieving board subscriptions: %s\n", err)
 		return
 	}
+	boardCache := dvach.NewBoardCache(bot.DvachClient, boardInfo.Board)
 
-	lastTimestamp := board.Timestamp
-	threads := boardInfo.ThreadsAfter(lastTimestamp)
+	wg := sync.WaitGroup{}
+	wg.Add(len(boardSubscriptions))
+	for _, boardSubscription := range boardSubscriptions {
+		go func(boardSubscription storage.BoardSubscription) {
+			bot.publishThreadsToSubscription(
+				boardCache,
+				boardInfo,
+				&boardSubscription,
+			)
+			wg.Done()
+		}(boardSubscription)
+	}
+	wg.Wait()
+}
+
+func (bot *Bot) publishThreadsToSubscription(
+	boardCache *dvach.BoardCache,
+	boardInfo *dvach.BoardInfo,
+	boardSubscription *storage.BoardSubscription,
+) {
+	threads := boardInfo.NotSentThreadsWithScoreGreaterThan(
+		boardSubscription.SentThreadIDs,
+		boardSubscription.Timestamp,
+		boardSubscription.MinScore,
+	)
 	if len(threads) == 0 {
 		return
 	}
@@ -27,63 +51,25 @@ func (bot *Bot) publishBoardInfo(boardInfo *dvach.BoardInfo) {
 		threadSubject = html.UnescapeString(thread.Subject)
 
 		log.Printf(
-			"[%s] %s: %s",
+			"%v [%s] %s: %s",
+			boardSubscription.ChatID,
 			boardInfo.Board,
 			threadSubject,
 			threadURL,
 		)
 
-		threadMessage, err := getFormatedThreadMessage(
-			bot.DvachClient,
-			boardInfo.Board,
-			thread.ID,
-		)
+		threadMessage, err := boardCache.GetFormattedThreadMessage(thread.ID)
+
 		if err != nil {
 			log.Printf("Error: Could not get formatted message. %s", err)
 			threadMessage = threadURL
 		}
 
-		for _, chatID := range board.ChatIDs {
-			bot.TelegramClient.SendMarkdownMessage(chatID, threadMessage)
-		}
-
-		bot.Storage.UpdateBoardTimestamp(board.Name, thread.Timestamp)
+		bot.TelegramClient.SendMarkdownMessage(boardSubscription.ChatID, threadMessage)
+		bot.Storage.LogSentThread(
+			boardSubscription.BoardName,
+			boardSubscription.ChatID,
+			thread.ID,
+		)
 	}
-}
-
-func getFormatedThreadMessage(
-	dvachClient *dvach.Client,
-	board, threadID string,
-) (string, error) {
-	post, err := dvachClient.ThreadFirstPost(board, threadID)
-	if err != nil {
-		return "", err
-	}
-
-	message := ""
-	if post.Subject != "" {
-		message = message + fmt.Sprintf("*%s*\n", post.SanitizedSubject())
-	}
-	if fileURL := post.FileUrl(board); fileURL != "" {
-		message = message + fmt.Sprintf("%s\n\n", fileURL)
-	}
-	if comment := post.SanitizedComment(); comment != "" {
-		message = message + fmt.Sprintf("%s\n", comment)
-	}
-	message = fmt.Sprintf("%.4000s", message)
-	message = addMissingFormatting(message, "*")
-	message = addMissingFormatting(message, "_")
-	message = message + post.ThreadUrl(board)
-
-	return message, nil
-}
-
-func addMissingFormatting(message, formatChar string) string {
-	allCount := strings.Count(message, formatChar)
-	escapedCount := strings.Count(message, "\\"+formatChar)
-	if (allCount-escapedCount)%2 == 0 {
-		return message
-	}
-
-	return message + formatChar
 }
