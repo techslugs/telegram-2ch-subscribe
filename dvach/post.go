@@ -2,11 +2,16 @@ package dvach
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/microcosm-cc/bluemonday"
 	"html"
 	"strconv"
 	"strings"
+)
+
+const (
+	UnknownPostInformationError = "Error: Unknown post info %v"
 )
 
 type BoardWithThreadWithPosts struct {
@@ -37,8 +42,11 @@ func NewBoardWithThreadWithPosts(jsonBoardData []byte) *BoardWithThreadWithPosts
 	return &boardWithThread
 }
 
-func (boardWithThread *BoardWithThreadWithPosts) ThreadPost() *Post {
-	return &boardWithThread.Threads[0].Posts[0]
+func (boardWithThread *BoardWithThreadWithPosts) ThreadPost() (*Post, error) {
+	if len(boardWithThread.Threads) < 1 || len(boardWithThread.Threads[0].Posts) < 1 {
+		return nil, errors.New(UnknownPostInformationError)
+	}
+	return &boardWithThread.Threads[0].Posts[0], nil
 }
 
 func (post *Post) ThreadUrl(board string) string {

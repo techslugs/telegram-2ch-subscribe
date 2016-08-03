@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"github.com/tmwh/telegram-2ch-subscribe/dvach"
 	"github.com/tmwh/telegram-2ch-subscribe/storage"
 	"html"
@@ -36,11 +37,7 @@ func (bot *Bot) publishThreadsToSubscription(
 	boardInfo *dvach.BoardInfo,
 	boardSubscription *storage.BoardSubscription,
 ) {
-	threads := boardInfo.NotSentThreadsWithScoreGreaterThan(
-		boardSubscription.SentThreadIDs,
-		boardSubscription.Timestamp,
-		boardSubscription.MinScore,
-	)
+	threads := getNotSentThreads(boardInfo, boardSubscription)
 	if len(threads) == 0 {
 		return
 	}
@@ -50,13 +47,7 @@ func (bot *Bot) publishThreadsToSubscription(
 		threadURL = boardInfo.ThreadUrl(thread.ID)
 		threadSubject = html.UnescapeString(thread.Subject)
 
-		log.Printf(
-			"%v [%s] %s: %s",
-			boardSubscription.ChatID,
-			boardInfo.Board,
-			threadSubject,
-			threadURL,
-		)
+		logTagged(boardSubscription, fmt.Sprintf("%s: %s", threadSubject, threadURL))
 
 		threadMessage, err := boardCache.GetFormattedThreadMessage(thread.ID)
 
@@ -65,11 +56,48 @@ func (bot *Bot) publishThreadsToSubscription(
 			threadMessage = threadURL
 		}
 
-		bot.TelegramClient.SendMarkdownMessage(boardSubscription.ChatID, threadMessage)
+		if !boardSubscription.HasStopWords(threadMessage) {
+			bot.TelegramClient.SendMarkdownMessage(boardSubscription.ChatID, threadMessage)
+		} else {
+			logTagged(boardSubscription, fmt.Sprintf("Skipping thread %s due to stop words.", threadURL))
+		}
+
 		bot.Storage.LogSentThread(
 			boardSubscription.BoardName,
 			boardSubscription.ChatID,
 			thread.ID,
 		)
 	}
+}
+
+func logTagged(boardSubscription *storage.BoardSubscription, message string) {
+	log.Printf(
+		"[%v %s] %s",
+		boardSubscription.ChatID,
+		boardSubscription.BoardName,
+		message,
+	)
+}
+
+func getNotSentThreads(
+	boardInfo *dvach.BoardInfo,
+	boardSubscription *storage.BoardSubscription,
+) []dvach.ThreadInfo {
+	sentThreadIDsMap := buildThreadIDsMap(boardSubscription.SentThreadIDs)
+
+	threads := boardInfo.FilteredThreads(func(thread *dvach.ThreadInfo) bool {
+		_, ok := sentThreadIDsMap[thread.ID]
+		return !ok &&
+			thread.Score > boardSubscription.MinScore &&
+			thread.Timestamp > boardSubscription.Timestamp
+	})
+	return threads
+}
+
+func buildThreadIDsMap(sentThreadIDs []string) map[string]struct{} {
+	threadIDsMap := make(map[string]struct{})
+	for _, threadID := range sentThreadIDs {
+		threadIDsMap[threadID] = struct{}{}
+	}
+	return threadIDsMap
 }
