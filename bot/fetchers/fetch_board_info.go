@@ -31,7 +31,7 @@ func fetchInfoForAllBoards(
 		callback(nil, err)
 		return
 	}
-	log.Printf("%v", boardNames)
+	log.Printf("Fetching info for boards %v", boardNames)
 
 	for _, boardName := range boardNames {
 		boardInfo, err := dvachClient.BoardInfo(boardName)

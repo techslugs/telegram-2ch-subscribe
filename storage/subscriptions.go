@@ -108,7 +108,7 @@ func (storage *Storage) LogSentThread(boardName string, chatID int64, threadID s
 func (storage *Storage) ClearStaleThreadIDs(boardName string, threadIDs []string) error {
 	query := bson.M{"boardName": boardName}
 	change := bson.M{
-		"$pull": bson.M{"$nin": bson.M{"sentThreadIDs": threadIDs}},
+		"$pull": bson.M{"sentThreadIDs": bson.M{"$nin": threadIDs}},
 	}
 	_, err := storage.BoardSubscriptions.UpdateAll(query, change)
 	return err

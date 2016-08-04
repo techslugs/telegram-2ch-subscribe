@@ -6,42 +6,46 @@ import (
 	"github.com/tmwh/telegram-2ch-subscribe/telegram"
 	"log"
 	"regexp"
-	"strings"
 )
 
-var SetStopWords = &SetStopWordsCommand{
+var SetStopWordsChannel = &SetStopWordsChannelCommand{
 	BaseCommand{
-		regexp:         regexp.MustCompile(`(?s)\s*/2ch_set_stop_words\s+(\w+)(.*)`),
+		regexp:         regexp.MustCompile(`(?s)\s*/2ch_set_stop_words_channel\s+(@\w*)\s+(\w+)(.*)`),
 		successMessage: "Successfully set stop words!",
 		usageMessage:   "/2ch_set_stop_words <board>\n\tstop words\n\t1 per line",
 	},
 }
 
-type SetStopWordsCommand struct {
+type SetStopWordsChannelCommand struct {
 	BaseCommand
 }
 
-func (cmd *SetStopWordsCommand) Parse(messageText string) ([]string, bool) {
+func (cmd *SetStopWordsChannelCommand) Parse(messageText string) ([]string, bool) {
 	args := cmd.regexp.FindStringSubmatch(messageText)
-	return args, len(args) > 1 && args[1] != ""
+	return args, len(args) > 2 && args[1] != "" && args[2] != ""
 }
 
-func (cmd *SetStopWordsCommand) Process(
+func (cmd *SetStopWordsChannelCommand) Process(
 	telegramClient *telegram.Client,
 	args []string,
 	message *tgbotapi.Message,
 ) error {
-	chatID := message.Chat.ID
+	channelName := args[1]
+	responseChatID := message.Chat.ID
+	chatID, err := telegramClient.GetChatIDByChannelName(channelName)
+	if err != nil {
+		return errors.New(cmd.UsageMessage())
+	}
 	if !telegramClient.IsUserAdministrator(chatID, message.From.ID) {
 		return errors.New(UnauthorizedError)
 	}
-	stopWords := parseStopWords(args[2])
+	stopWords := parseStopWords(args[3])
 
 	boardNames, err :=
 		telegramClient.SetStopWords(
 			chatID,
-			chatID,
-			args[1],
+			responseChatID,
+			args[2],
 			stopWords,
 			cmd.SuccessMessage(),
 		)
@@ -55,18 +59,11 @@ func (cmd *SetStopWordsCommand) Process(
 		)
 		return errors.New(UnknownError)
 	}
-	log.Printf("[%s] set stop words for %v", message.From.UserName, boardNames)
+	log.Printf(
+		"[%s] set stop words for channel %s, %v",
+		message.From.UserName,
+		channelName,
+		boardNames,
+	)
 	return nil
-}
-
-func parseStopWords(message string) []string {
-	words := strings.Split(message, "\n")
-	stopWords := words[:0]
-	for _, word := range words {
-		if word != "" {
-			stopWords = append(stopWords, word)
-		}
-	}
-
-	return stopWords
 }

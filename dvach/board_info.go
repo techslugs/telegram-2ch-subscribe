@@ -53,6 +53,15 @@ func (boardInfo *BoardInfo) FilteredThreads(filter ThreadFilter) []ThreadInfo {
 	return threads
 }
 
+func (boardInfo *BoardInfo) ThreadIDs() []string {
+	ids := make([]string, len(boardInfo.Threads))
+
+	for i, thread := range boardInfo.Threads {
+		ids[i] = thread.ID
+	}
+	return ids
+}
+
 func buildThreadIDsMap(sentThreadIDs []string) map[string]struct{} {
 	threadIDsMap := make(map[string]struct{})
 	for _, threadID := range sentThreadIDs {

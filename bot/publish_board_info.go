@@ -30,6 +30,20 @@ func (bot *Bot) publishBoardInfo(boardInfo *dvach.BoardInfo) {
 		}(boardSubscription)
 	}
 	wg.Wait()
+
+	bot.clearStaleThreadIDs(boardInfo)
+}
+
+func (bot *Bot) clearStaleThreadIDs(boardInfo *dvach.BoardInfo) {
+	threadIDs := boardInfo.ThreadIDs()
+	if len(threadIDs) < 1 {
+		return
+	}
+
+	err := bot.Storage.ClearStaleThreadIDs(boardInfo.Board, threadIDs)
+	if err != nil {
+		log.Printf("Error clearing stale threads IDs: %s\n", err)
+	}
 }
 
 func (bot *Bot) publishThreadsToSubscription(
