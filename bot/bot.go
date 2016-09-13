@@ -1,10 +1,10 @@
 package bot
 
 import (
-	"github.com/tmwh/telegram-2ch-subscribe/bot/fetchers"
-	"github.com/tmwh/telegram-2ch-subscribe/dvach"
-	"github.com/tmwh/telegram-2ch-subscribe/storage"
-	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"github.com/techslugs/telegram-2ch-subscribe/bot/fetchers"
+	"github.com/techslugs/telegram-2ch-subscribe/dvach"
+	"github.com/techslugs/telegram-2ch-subscribe/storage"
+	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 	"log"
 	"net/http"
 	"time"

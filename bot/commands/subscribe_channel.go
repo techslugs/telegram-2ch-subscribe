@@ -3,7 +3,7 @@ package commands
 import (
 	"errors"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 	"log"
 	"regexp"
 	"strconv"

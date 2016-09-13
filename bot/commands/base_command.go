@@ -3,7 +3,7 @@ package commands
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"regexp"
-	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 )
 
 type BaseCommand struct {

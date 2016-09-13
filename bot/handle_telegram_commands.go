@@ -3,8 +3,8 @@ package bot
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
-	"github.com/tmwh/telegram-2ch-subscribe/bot/commands"
-	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"github.com/techslugs/telegram-2ch-subscribe/bot/commands"
+	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 )
 
 func StartHandleCommandsFromTelegram(telegramClient *telegram.Client) {

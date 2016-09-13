@@ -5,7 +5,7 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"regexp"
-	"github.com/tmwh/telegram-2ch-subscribe/telegram"
+	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 )
 
 var Unsubscribe = &UnsubscribeCommand{
