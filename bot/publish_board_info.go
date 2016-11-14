@@ -1,8 +1,8 @@
 package bot
 
 import (
-	"github.com/tmwh/telegram-2ch-subscribe/dvach"
-	"github.com/tmwh/telegram-2ch-subscribe/storage"
+	"github.com/techslugs/telegram-2ch-subscribe/dvach"
+	"github.com/techslugs/telegram-2ch-subscribe/storage"
 	"html"
 	"log"
 	"sync"

@@ -2,7 +2,7 @@ package telegram
 
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/tmwh/telegram-2ch-subscribe/storage"
+	"github.com/techslugs/telegram-2ch-subscribe/storage"
 	"log"
 	"regexp"
 )

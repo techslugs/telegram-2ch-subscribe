@@ -1,7 +1,7 @@
 package fetchers
 
 import (
-	"github.com/tmwh/telegram-2ch-subscribe/dvach"
+	"github.com/techslugs/telegram-2ch-subscribe/dvach"
 	"time"
 )
 
