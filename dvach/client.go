@@ -13,7 +13,7 @@ type Client struct {
 
 const (
 	FetchError      = "Error code: %v"
-	FileEndpoint    = "https://2ch.hk/%s/%s"
+	FileEndpoint    = "https://2ch.hk%s"
 	BoardsEndpoint  = "https://2ch.hk/boards.json"
 	ThreadsEndpoint = "https://2ch.hk/%s/threads.json"
 	ThreadEndpoint  = "https://2ch.hk/%s/res/%s.json"

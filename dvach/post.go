@@ -49,7 +49,7 @@ func (post *Post) FileUrl(board string) string {
 	if len(post.Files) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(FileEndpoint, board, post.Files[0].Path)
+	return fmt.Sprintf(FileEndpoint, post.Files[0].Path)
 }
 
 func (post *Post) SanitizedSubject() string {

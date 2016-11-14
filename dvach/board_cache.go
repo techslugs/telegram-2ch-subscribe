@@ -51,13 +51,13 @@ func getFormattedThreadMessage(
 
 	message := ""
 	if post.Subject != "" {
-		message = message + fmt.Sprintf("*%s*\n", post.SanitizedSubject())
+		message = message + fmt.Sprintf("*%s*", post.SanitizedSubject())
 	}
 	if fileURL := post.FileUrl(board); fileURL != "" {
-		message = message + fmt.Sprintf("%s\n\n", fileURL)
+		message = message + fmt.Sprintf("[.](%s)", fileURL)
 	}
 	if comment := post.SanitizedComment(); comment != "" {
-		message = message + fmt.Sprintf("%s\n", comment)
+		message = message + fmt.Sprintf("\n\n%s\n", comment)
 	}
 	message = fmt.Sprintf("%.4000s", message)
 	message = addMissingFormatting(message, "*")
