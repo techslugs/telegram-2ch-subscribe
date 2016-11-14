@@ -156,6 +156,29 @@ func (client *Client) SubscribeToBoards(
 	return boardNames, nil
 }
 
+func (client *Client) SetStopWords(
+	subscribeChatID int64,
+	responseChatID int64,
+	boardNamesSplitBySpace string,
+	stopWords []string,
+	successMessage string,
+) ([]string, error) {
+	boardNames, err := client.Storage.
+		FilterInvalidBoardNames(SpaceRegexp.Split(boardNamesSplitBySpace, -1))
+	if err != nil {
+		return boardNames, err
+	}
+
+	for _, boardName := range boardNames {
+		if boardName == "" {
+			continue
+		}
+		client.Storage.SetStopWords(boardName, subscribeChatID, stopWords)
+	}
+	client.SendMessage(responseChatID, successMessage)
+	return boardNames, nil
+}
+
 func (client *Client) UnsubscribeFromBoards(
 	unsubscribeChatID int64,
 	responseChatID int64,

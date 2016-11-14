@@ -2,9 +2,9 @@ package bot
 
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"log"
 	"github.com/techslugs/telegram-2ch-subscribe/bot/commands"
 	"github.com/techslugs/telegram-2ch-subscribe/telegram"
+	"log"
 )
 
 func StartHandleCommandsFromTelegram(telegramClient *telegram.Client) {
@@ -29,6 +29,10 @@ func parseAndHandleCommand(telegramClient *telegram.Client, update *tgbotapi.Upd
 		commands.Handle(commands.Subscribe, telegramClient, update.Message)
 	case commands.Unsubscribe.Matches(messageText):
 		commands.Handle(commands.Unsubscribe, telegramClient, update.Message)
+	case commands.SetStopWordsChannel.Matches(messageText):
+		commands.Handle(commands.SetStopWordsChannel, telegramClient, update.Message)
+	case commands.SetStopWords.Matches(messageText):
+		commands.Handle(commands.SetStopWords, telegramClient, update.Message)
 	case commands.Usage.Matches(messageText):
 		commands.Handle(commands.Usage, telegramClient, update.Message)
 	}

@@ -1,16 +1,37 @@
 package storage
 
 import (
+	"github.com/techslugs/telegram-2ch-subscribe/stop_words"
 	"gopkg.in/mgo.v2/bson"
+	"regexp"
 	"time"
 )
 
 type BoardSubscription struct {
-	ChatID        int64    `bson:"chatID"`
-	BoardName     string   `bson:"boardName"`
-	MinScore      float64  `bson:"minScore"`
-	SentThreadIDs []string `bson:"sentThreadIDs"`
-	Timestamp     int64    `bson:"timestamp"`
+	ChatID                int64    `bson:"chatID"`
+	BoardName             string   `bson:"boardName"`
+	MinScore              float64  `bson:"minScore"`
+	SentThreadIDs         []string `bson:"sentThreadIDs"`
+	StopWordsRegexpString string   `bson:"stopWordsRegexpString"`
+	Timestamp             int64    `bson:"timestamp"`
+	stopWordsRegexp       *regexp.Regexp
+}
+
+func (boardSubscription *BoardSubscription) StopWordsRegexp() *regexp.Regexp {
+	if boardSubscription.stopWordsRegexp != nil {
+		return boardSubscription.stopWordsRegexp
+	}
+	boardSubscription.stopWordsRegexp = regexp.MustCompile(boardSubscription.StopWordsRegexpString)
+	return boardSubscription.stopWordsRegexp
+}
+
+func (boardSubscription *BoardSubscription) HasStopWords(message string) bool {
+	if boardSubscription.StopWordsRegexpString == "" {
+		return false
+	}
+
+	normalizedMessage := stop_words.Normalize(message)
+	return boardSubscription.StopWordsRegexp().MatchString(normalizedMessage)
 }
 
 func defaultTimestamp() int64 {
@@ -43,6 +64,21 @@ func (storage *Storage) UnsubscribeChat(boardName string, chatID int64) error {
 	return err
 }
 
+func (storage *Storage) SetStopWords(
+	boardName string,
+	chatID int64,
+	stopWords []string,
+) error {
+	stopWordsRegexpString := stop_words.BuildStopwordsRegexpString(stopWords)
+	query := subscriptionQuery(boardName, chatID)
+	change := bson.M{
+		"$set":         bson.M{"stopWordsRegexpString": stopWordsRegexpString},
+		"$setOnInsert": bson.M{"minScore": 0, "timestamp": defaultTimestamp()},
+	}
+	_, err := storage.BoardSubscriptions.Upsert(query, change)
+	return err
+}
+
 func (storage *Storage) AllBoardSubscriptions(boardName string) ([]BoardSubscription, error) {
 	query := bson.M{"boardName": boardName}
 	var subscriptions []BoardSubscription
@@ -72,7 +108,7 @@ func (storage *Storage) LogSentThread(boardName string, chatID int64, threadID s
 func (storage *Storage) ClearStaleThreadIDs(boardName string, threadIDs []string) error {
 	query := bson.M{"boardName": boardName}
 	change := bson.M{
-		"$pull": bson.M{"$nin": bson.M{"sentThreadIDs": threadIDs}},
+		"$pull": bson.M{"sentThreadIDs": bson.M{"$nin": threadIDs}},
 	}
 	_, err := storage.BoardSubscriptions.UpdateAll(query, change)
 	return err

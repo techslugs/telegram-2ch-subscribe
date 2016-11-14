@@ -35,27 +35,31 @@ func NewBoardInfo(jsonBoardData []byte) *BoardInfo {
 	return &boardInfo
 }
 
-func (boardInfo *BoardInfo) NotSentThreadsWithScoreGreaterThan(
-	sentThreadIDs []string,
-	timestamp int64,
-	minScore float64,
-) []ThreadInfo {
+type ThreadFilter func(thread *ThreadInfo) bool
+
+func (boardInfo *BoardInfo) FilteredThreads(filter ThreadFilter) []ThreadInfo {
 	threads := make([]ThreadInfo, 0)
 	if boardInfo == nil || boardInfo.Threads == nil {
 		return threads
 	}
 
-	sentThreadIDsMap := buildThreadIDsMap(sentThreadIDs)
 	for _, thread := range boardInfo.Threads {
-		if _, ok := sentThreadIDsMap[thread.ID]; !ok &&
-			thread.Score > minScore &&
-			thread.Timestamp > timestamp {
+		if filter(&thread) {
 			threads = append(threads, thread)
 		}
 	}
 	sort.Sort(ByTimestamp(threads))
 
 	return threads
+}
+
+func (boardInfo *BoardInfo) ThreadIDs() []string {
+	ids := make([]string, len(boardInfo.Threads))
+
+	for i, thread := range boardInfo.Threads {
+		ids[i] = thread.ID
+	}
+	return ids
 }
 
 func buildThreadIDsMap(sentThreadIDs []string) map[string]struct{} {

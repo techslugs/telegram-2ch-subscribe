@@ -80,5 +80,5 @@ func (client *Client) ThreadFirstPost(board string, threadID string) (*Post, err
 	}
 
 	boardWithThread := NewBoardWithThreadWithPosts(responseBytes)
-	return boardWithThread.ThreadPost(), nil
+	return boardWithThread.ThreadPost()
 }
