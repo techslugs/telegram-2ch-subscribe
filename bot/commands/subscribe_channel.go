@@ -7,14 +7,19 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"fmt"
 )
 
-var SubscribeChannel = &SubscribeChannelCommand{
-	BaseCommand{
-		regexp:         regexp.MustCompile(`\s*/2ch_subscribe_channel\s+(@\w*)\s*(\w+)\s*(\d+(\.\d*)?)`),
-		successMessage: "Successfully subscribed!",
-		usageMessage:   "/2ch_subscribe_channel @<channel> <board> <min score>",
-	},
+func BuildSubscribeChannel(botName string) Command {
+	regexp_template := `\s*/subscribe_channel(?:@%s)?\s+(@\w*)\s*(\w+)\s*(\d+(\.\d*)?)`
+	regexp_source := fmt.Sprintf(regexp_template, botName)
+	return &SubscribeChannelCommand{
+		BaseCommand{
+			regexp: regexp.MustCompile(regexp_source),
+			successMessage: "Successfully subscribed!",
+			usageMessage: "/subscribe_channel @<channel> <board> <min score>",
+		},
+	}
 }
 
 type SubscribeChannelCommand struct {

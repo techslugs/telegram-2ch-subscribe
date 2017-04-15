@@ -4,16 +4,21 @@ import (
 	"errors"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
+	"fmt"
 	"regexp"
 	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 )
 
-var Unsubscribe = &UnsubscribeCommand{
-	BaseCommand{
-		regexp:         regexp.MustCompile(`\s*/2ch_unsubscribe\s*([\w\s]*)?`),
-		successMessage: "Successfully unsubscribed!",
-		usageMessage:   "/2ch_unsubscribe <board1> <board2>...",
-	},
+func BuildUnsubscribe(botName string) Command {
+	regexp_template := `\s*/unsubscribe(?:@%s)?\s*([\w\s]*)?`
+	regexp_source := fmt.Sprintf(regexp_template, botName)
+  return &UnsubscribeCommand{
+  	BaseCommand{
+  		regexp:         regexp.MustCompile(regexp_source),
+  		successMessage: "Successfully unsubscribed!",
+  		usageMessage:   "/unsubscribe <board1> <board2>...",
+  	},
+  }
 }
 
 type UnsubscribeCommand struct {

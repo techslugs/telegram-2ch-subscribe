@@ -5,15 +5,20 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 	"log"
+	"fmt"
 	"regexp"
 )
 
-var SetStopWordsChannel = &SetStopWordsChannelCommand{
-	BaseCommand{
-		regexp:         regexp.MustCompile(`(?s)\s*/2ch_set_stop_words_channel\s+(@\w*)\s+(\w+)(.*)`),
-		successMessage: "Successfully set stop words!",
-		usageMessage:   "/2ch_set_stop_words <board>\n\tstop words\n\t1 per line",
-	},
+func BuildSetStopWordsChannel(botName string) Command {
+	regexp_template := `(?s)\s*/set_stop_words_channel(?:@%s)?\s+(@\w*)\s+(\w+)(.*)`
+	regexp_source := fmt.Sprintf(regexp_template, botName)
+	return &SetStopWordsChannelCommand{
+		BaseCommand{
+			regexp:         regexp.MustCompile(regexp_source),
+			successMessage: "Successfully set stop words!",
+			usageMessage:   "/set_stop_words_channel @channel_name <board>\n\tstop words\n\t1 per line",
+		},
+	}
 }
 
 type SetStopWordsChannelCommand struct {

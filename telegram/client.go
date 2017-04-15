@@ -39,6 +39,10 @@ func NewClient(telegramToken string, storage *storage.Storage) (*Client, error) 
 	return client, nil
 }
 
+func (client *Client) GetMyName() string {
+	return client.TelegramAPI.Self.UserName
+}
+
 func (client *Client) GetChatIDByChannelName(
 	channelName string,
 ) (int64, error) {

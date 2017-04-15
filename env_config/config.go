@@ -8,7 +8,7 @@ import (
 type Config struct {
 	TelegramToken            string `env:"TELEGRAM_TOKEN"`
 	BoardPollingTimeout      int    `env:"BOARD_POLLING_TIMEOUT" envDefault:"5"`
-	BoardsListPollingTimeout int    `env:"BOARD_POLLING_TIMEOUT" envDefault:"300"`
+	BoardsListPollingTimeout int    `env:"BOARDS_LIST_POLLING_TIMEOUT" envDefault:"300"`
 	IpAddress                string `env:"IP_ADDRESS"`
 	Port                     int    `env:"PORT"`
 	MongoURL                 string `env:"MONGO_URL"`

@@ -2,15 +2,22 @@ package commands
 
 import (
 	"regexp"
+	"fmt"
 )
 
-var Usage = &BaseCommand{
-	regexp: regexp.MustCompile(`\s*/2ch_usage`),
-	successMessage: Subscribe.UsageMessage() +
-		"\n" +
-		Unsubscribe.UsageMessage() +
-		"\n" +
-		SubscribeChannel.UsageMessage() +
-		"\n" +
-		UnsubscribeChannel.UsageMessage(),
+func BuildUsage(botName string, commands []Command) Command {
+	regexp_template := `\s*/usage(?:@%s)?`
+	regexp_source := fmt.Sprintf(regexp_template, botName)
+	return &BaseCommand{
+		regexp: regexp.MustCompile(regexp_source),
+		successMessage: buildUsageMessage(commands),
+	}
+}
+
+func buildUsageMessage(commands []Command) string {
+	message := ""
+	for _, command := range commands {
+		message += command.UsageMessage() + "\n\n"
+	}
+	return message
 }

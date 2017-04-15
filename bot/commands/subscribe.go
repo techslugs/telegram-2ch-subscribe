@@ -6,15 +6,20 @@ import (
 	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 	"log"
 	"regexp"
+	"fmt"
 	"strconv"
 )
 
-var Subscribe = &SubscribeCommand{
-	BaseCommand{
-		regexp:         regexp.MustCompile(`\s*/2ch_subscribe\s+(\w+)\s*(\d+(\.\d*)?)`),
-		successMessage: "Successfully subscribed!",
-		usageMessage:   "/2ch_subscribe <board1> <min score>",
-	},
+func BuildSubscribe(botName string) Command {
+	regexp_template := `\s*/subscribe(?:@%s)?\s+(\w+)\s*(\d+(\.\d*)?)`
+	regexp_source := fmt.Sprintf(regexp_template, botName)
+	return &SubscribeCommand{
+		BaseCommand{
+			regexp:         regexp.MustCompile(regexp_source),
+			successMessage: "Successfully subscribed!",
+			usageMessage:   "/subscribe <board1> <min score>",
+		},
+	}
 }
 
 type SubscribeCommand struct {

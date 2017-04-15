@@ -6,15 +6,20 @@ import (
 	"github.com/techslugs/telegram-2ch-subscribe/telegram"
 	"log"
 	"regexp"
+	"fmt"
 	"strings"
 )
 
-var SetStopWords = &SetStopWordsCommand{
-	BaseCommand{
-		regexp:         regexp.MustCompile(`(?s)\s*/2ch_set_stop_words\s+(\w+)(.*)`),
-		successMessage: "Successfully set stop words!",
-		usageMessage:   "/2ch_set_stop_words <board>\n\tstop words\n\t1 per line",
-	},
+func BuildSetStopWords(botName string) Command {
+	regexp_template := `(?s)\s*/set_stop_words(?:@%s)?\s+(\w+)(.*)`
+	regexp_source := fmt.Sprintf(regexp_template, botName)
+	return &SetStopWordsCommand{
+		BaseCommand{
+			regexp:         regexp.MustCompile(regexp_source),
+			successMessage: "Successfully set stop words!",
+			usageMessage:   "/set_stop_words <board>\n\tstop words\n\t1 per line",
+		},
+	}
 }
 
 type SetStopWordsCommand struct {

@@ -8,32 +8,22 @@ import (
 )
 
 func StartHandleCommandsFromTelegram(telegramClient *telegram.Client) {
+	available_commands := commands.BuildCommands(telegramClient.GetMyName())
 	for update := range telegramClient.TelegramUpdates {
-		parseAndHandleCommand(telegramClient, &update)
+		parseAndHandleCommand(available_commands, telegramClient, &update)
 	}
 }
 
-func parseAndHandleCommand(telegramClient *telegram.Client, update *tgbotapi.Update) {
+func parseAndHandleCommand(available_commands []commands.Command, telegramClient *telegram.Client, update *tgbotapi.Update) {
 	if update.Message == nil {
 		return
 	}
 	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 	messageText := update.Message.Text
-	switch {
-	case commands.SubscribeChannel.Matches(messageText):
-		commands.Handle(commands.SubscribeChannel, telegramClient, update.Message)
-	case commands.UnsubscribeChannel.Matches(messageText):
-		commands.Handle(commands.UnsubscribeChannel, telegramClient, update.Message)
-	case commands.Subscribe.Matches(messageText):
-		commands.Handle(commands.Subscribe, telegramClient, update.Message)
-	case commands.Unsubscribe.Matches(messageText):
-		commands.Handle(commands.Unsubscribe, telegramClient, update.Message)
-	case commands.SetStopWordsChannel.Matches(messageText):
-		commands.Handle(commands.SetStopWordsChannel, telegramClient, update.Message)
-	case commands.SetStopWords.Matches(messageText):
-		commands.Handle(commands.SetStopWords, telegramClient, update.Message)
-	case commands.Usage.Matches(messageText):
-		commands.Handle(commands.Usage, telegramClient, update.Message)
+	for _, command := range available_commands {
+		if command.Matches(messageText) {
+			commands.Handle(command, telegramClient, update.Message)
+		}
 	}
 }

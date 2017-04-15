@@ -102,8 +102,8 @@ func getNotSentThreads(
 	threads := boardInfo.FilteredThreads(func(thread *dvach.ThreadInfo) bool {
 		_, ok := sentThreadIDsMap[thread.ID]
 		return !ok &&
-			thread.Score > boardSubscription.MinScore &&
-			thread.Timestamp > boardSubscription.Timestamp
+			thread.Score >= boardSubscription.MinScore &&
+			thread.Timestamp >= boardSubscription.Timestamp
 	})
 	return threads
 }
