@@ -24,6 +24,7 @@ func parseAndHandleCommand(available_commands []commands.Command, telegramClient
 	for _, command := range available_commands {
 		if command.Matches(messageText) {
 			commands.Handle(command, telegramClient, update.Message)
+			break
 		}
 	}
 }

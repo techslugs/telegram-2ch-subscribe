@@ -10,7 +10,7 @@ import (
 )
 
 func BuildUnsubscribe(botName string) Command {
-	regexp_template := `\s*/unsubscribe(?:@%s)?\s*([\w\s]*)?`
+	regexp_template := `\s*/unsubscribe(?:@%s)?\s+([\w\s]*)?`
 	regexp_source := fmt.Sprintf(regexp_template, botName)
   return &UnsubscribeCommand{
   	BaseCommand{
